@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Player</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+
+<h1 th:text="${player.name}"></h1>
+<p th:text="${player.experience}"></p>
+<p th:text="${player.id}"></p>
+
+<h1 th:text="${player.name}"></h1>
+
+<div>
+    <ul>
+        <li>Id: <span th:text="${player.id}"></span></li>
+        <li>Name: <span th:text="${player.name}"></span></li>
+        <li>XP: <span th:text="${player.experience}"></span> Experience</li>
+
+    </ul>
+</div>
+
+
+</body>
+</html>
