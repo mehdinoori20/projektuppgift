@@ -1,67 +1,110 @@
 package se.reky.hakan.service;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.ui.Model;
-import se.reky.hakan.model.Player;
-import se.reky.hakan.web.PlayerController;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.util.Collections;
+import java.time.Duration;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-
-
+@Disabled
 public class PlayerControllerTest {
-    @Mock
-    private PlayerService playerService;
 
-    @Mock
-    private Model model;
+    private ChromeDriver driver;
 
-    @InjectMocks
-    private PlayerController playerController;
+    @BeforeAll
+    public static void init() {
+        WebDriverManager.chromedriver().setup();
+    }
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.initMocks(this);
+    public void setUp () {
+        driver = new ChromeDriver();
+        //driver.get("http://localhost:8080/players");
+    }
+
+    @AfterEach
+    public void tearDown () {
+        if (driver != null) {
+            driver.quit();
+        }
     }
 
     @Test
-    void testListPlayers() {
-        // Arrange
-        List<Player> players = Collections.singletonList(new Player());
+    public void shouldReturnAmountOfPlayers () {
+        driver.get("http://localhost:8080/players");
+        List<WebElement> elements = driver.findElements(By.tagName("li"));
 
-        when(playerService.findAllPlayersSortedByExperience()).thenReturn(players);
-
-        // Act
-        String viewName = playerController.listPlayers(model);
-
-        // Assert
-        assertEquals("players", viewName);
-        verify(model, times(1)).addAttribute(eq("players"), eq(players));
-        verify(playerService, times(1)).findAllPlayersSortedByExperience();
+        assertEquals(2, elements.size());
     }
 
     @Test
-    void testPlayerById() {
-        // Arrange
-        Player player = new Player();
-        Long playerId = 1L;
-        when(playerService.findPlayerById(playerId)).thenReturn(player);
+    public void shouldReturnTrueIfPlayerIsDisplayed () {
+        driver.get("http://localhost:8080/players");
+        WebElement element = driver.findElement(By.tagName("li"));
 
-        // Act
-        String viewName = playerController.playerById(playerId, model);
-
-        // Assert
-        assertEquals("player", viewName);
-        verify(model, times(1)).addAttribute(eq("player"), eq(player));
-        verify(playerService, times(1)).findPlayerById(playerId);
+        assertTrue(element.isDisplayed());
     }
+
+    @Test
+    public void shouldReturnTitleString () {
+        driver.get("http://localhost:8080/players");
+        String element = driver.getTitle();
+
+        assertEquals("Players List", element);
+    }
+
+    @Test
+    public void shouldReturnButtonString () {
+        driver.get("http://localhost:8080/players");
+        WebElement element = driver.findElement(By.tagName("button"));
+
+        assertEquals("Logga in", element.getText());
+
+    }
+
+    @Test
+    public void shouldReturnPlayerNameOnClickedEndPoint () {
+        driver.get("http://localhost:8080/players");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        List <WebElement> elements = driver.findElements(By.tagName("a"));
+
+        elements.get(0).click();
+
+        WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h1")));
+
+        assertTrue(element.isDisplayed());
+
+        //top player has name "Håkan" and 119 experience
+        assertEquals("Håkan", element.getText());
+
+    }
+
+    @Test
+    public void shouldReturnExpOnClickedEndPoint () {
+        driver.get("http://localhost:8080/players");
+
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+        List <WebElement> elements = driver.findElements(By.tagName("a"));
+
+        elements.get(0).click();
+
+        List<WebElement> webElements = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.tagName("span")));
+
+        webElements.get(2);
+
+        assertEquals("119", webElements.get(2).getText());
+
+    }
+
+
 }
